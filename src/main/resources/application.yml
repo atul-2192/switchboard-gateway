@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: Gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+
+          routes:
+            - id: auth-service
+              uri: lb://AUTHSERVICE
+              predicates:
+                - Path=/api/v1/auth/**
+
+            - id: workspace-service
+              uri: lb://WORKSPACESERVICE
+              predicates:
+                - Path=/api/v1/workspaces/**,/api/v1/tasks/**,/api/v1/assignments/**
+
+server:
+  port: 8080
+
+# RSA public key for JWT validation
+jwt:
+  public-key: classpath:public.pem
+
+# JWKS URL of Auth Service
+auth:
+  jwks-url: http://localhost:8083/.well-known/jwks.json
+  jwks-refresh-ms: 60000
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    com.SwitchBoard.Gateway: DEBUG
+    org.springframework.security: DEBUG
+    io.jsonwebtoken: DEBUG
