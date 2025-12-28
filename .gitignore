@@ -1,0 +1,108 @@
+############################
+# Maven / Gradle
+############################
+target/
+build/
+.gradle/
+!.mvn/wrapper/maven-wrapper.jar
+
+############################
+# Logs
+############################
+logs/
+*.log
+*.log.*
+spring.log
+
+############################
+# Runtime & Temp Files
+############################
+tmp/
+temp/
+*.tmp
+*.pid
+*.pid.lock
+
+############################
+# OS Files
+############################
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+############################
+# IDEs
+############################
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+
+############################
+# Java
+############################
+*.class
+hs_err_pid*
+
+
+# Secrets (never commit)
+*.env
+.env
+.env.*
+
+############################
+# Docker
+############################
+docker-compose.override.yml
+*.tar
+*.tar.gz
+
+############################
+# Database
+############################
+*.db
+*.sqlite
+*.sqlite3
+/data/
+db-data/
+
+############################
+# Test Reports
+############################
+/test-output/
+/surefire-reports/
+/failsafe-reports/
+
+############################
+# Coverage Reports
+############################
+/coverage/
+/jacoco/
+/jacoco.exec
+
+############################
+# Build Tools / CI
+############################
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+############################
+# Misc
+############################
+*.swp
+*.swo
+*.bak
+*.orig

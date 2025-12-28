@@ -39,7 +39,6 @@ public class UserHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public int getOrder() {
-        // Run after authentication but before routing
         return -50;
     }
 }
