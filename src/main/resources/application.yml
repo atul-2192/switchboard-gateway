@@ -2,6 +2,14 @@ spring:
   application:
     name: Gateway
 
+  # Redis Configuration - Reusing Redis instance from AuthService
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      # password: ${REDIS_PASSWORD}  # Uncomment if AuthService Redis has authentication
+      timeout: 2000ms
+
   cloud:
     gateway:
       server:
@@ -25,13 +33,62 @@ spring:
 server:
   port: 8080
 
+# Idempotency Configuration
+# Configure different TTLs for different endpoints based on their characteristics
+idempotency:
+  # Default TTLs used when no endpoint-specific config matches
+  defaults:
+    in-progress: 30s      # Conservative default - handles most APIs
+    completed: 24h        # Standard retry window
+
+  # Endpoint-specific TTL overrides
+  # Format: "HTTP_METHOD:path_pattern"
+  # Supports wildcards: /** (recursive), /* (single level)
+  endpoints:
+    # Payment APIs - slow due to 3rd party calls (Stripe, PayPal)
+    # Longer IN_PROGRESS to avoid premature expiry
+    # Longer COMPLETED for audit/compliance
+    "POST:/api/v1/payments/**":
+      in-progress: 120s    # Stripe can take 30-60s
+      completed: 7d        # Keep for audit trail
+
+    # Workspace creation - fast DB operation
+    "POST:/api/v1/workspaces":
+      in-progress: 10s     # Fast DB insert
+      completed: 24h       # Standard retry window
+
+    # Task creation - fast DB operation
+    "POST:/api/v1/tasks":
+      in-progress: 10s
+      completed: 24h
+
+    # Assignment creation - fast DB operation
+    "POST:/api/v1/assignments":
+      in-progress: 10s
+      completed: 24h
+
+    # Bulk operations - longer processing time
+    "POST:/api/v1/bulk/**":
+      in-progress: 300s    # 5 minutes for large imports
+      completed: 48h       # Keep longer for retry window
+
+    # Report generation - expensive to regenerate
+    "POST:/api/v1/reports/**":
+      in-progress: 60s     # Complex queries
+      completed: 72h       # Cache longer to avoid regeneration
+
+    # File uploads - can be slow
+    "POST:/api/v1/files/**":
+      in-progress: 180s    # 3 minutes for large files
+      completed: 48h
+
 # RSA public key for JWT validation
 jwt:
   public-key: classpath:public.pem
 
-# JWKS URL of Auth Service
+# JWKS URL of Auth Service (using Eureka service discovery)
 auth:
-  jwks-url: http://localhost:8083/.well-known/jwks.json
+  jwks-url: http://AUTHSERVICE/.well-known/jwks.json
   jwks-refresh-ms: 60000
 
 eureka:
