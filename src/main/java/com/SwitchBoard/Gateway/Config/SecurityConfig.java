@@ -42,7 +42,6 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
 
-                // 🔑 Custom JWT authentication filter
                 .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
 
                 .exceptionHandling(exceptions ->
@@ -54,17 +53,10 @@ public class SecurityConfig {
                 )
 
                 .authorizeExchange(exchanges -> exchanges
-                        // ✅ Allow preflight
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // ✅ Allow actuator for infra / Nginx / monitoring
                         .pathMatchers("/actuator/health", "/actuator/info").permitAll()
-
-                        // ✅ Allow auth & jwks
                         .pathMatchers("/api/v1/auth/**").permitAll()
                         .pathMatchers("/.well-known/jwks.json").permitAll()
-
-                        // 🔒 Everything else secured
                         .anyExchange().authenticated()
                 )
 

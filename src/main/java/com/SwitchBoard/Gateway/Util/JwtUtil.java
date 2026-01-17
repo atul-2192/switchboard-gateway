@@ -42,7 +42,7 @@ public class JwtUtil {
         RSAPublicKey key = jwksService.getKey(kid);
 
         if (key == null) {
-            throw new RuntimeException("Public key not found for kid: " + kid);
+            throw new RuntimeException("JWKS keys not yet loaded from auth service. Please retry in a few seconds.");
         }
 
         return Jwts.parserBuilder()

@@ -23,9 +23,18 @@ public class JwtAuthenticationConverter implements ServerAuthenticationConverter
         this.jwtUtil = jwtUtil;
     }
 
-        @Override
+    @Override
     public Mono<Authentication> convert(ServerWebExchange exchange) {
         return Mono.fromCallable(() -> {
+            // Skip authentication for public endpoints
+            String path = exchange.getRequest().getURI().getPath();
+            if (path.startsWith("/actuator/") || 
+                path.startsWith("/api/v1/auth/") || 
+                path.equals("/.well-known/jwks.json")) {
+                log.debug("Skipping JWT authentication for public endpoint: {}", path);
+                return null;
+            }
+
             String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
             
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {

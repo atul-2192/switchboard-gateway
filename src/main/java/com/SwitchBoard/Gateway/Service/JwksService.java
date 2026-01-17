@@ -42,14 +42,16 @@ public class JwksService {
 
     @PostConstruct
     public void init() {
-        fetchAndCacheKeys();
+        // Don't block startup - fetch keys asynchronously
+        log.info("JWKS Service initialized. Keys will be fetched asynchronously.");
     }
 
     /**
      * Periodically refresh JWKS (default interval controlled by property).
      * This runs in Spring's scheduler.
+     * First execution happens 5 seconds after startup to allow services to register.
      */
-    @Scheduled(fixedDelayString = "${auth.jwks-refresh-ms:60000}")
+    @Scheduled(initialDelay = 5000, fixedDelayString = "${auth.jwks-refresh-ms:60000}")
     public void scheduledRefresh() {
         fetchAndCacheKeys();
     }
