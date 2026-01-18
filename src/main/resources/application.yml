@@ -1,100 +1,17 @@
+
 spring:
   application:
     name: Gateway
 
-  # Redis Configuration (Docker service name, NOT localhost)
-  data:
-    redis:
-      host: redis
-      port: 6379
-      timeout: 2000ms
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL}
 
   cloud:
-    gateway:
+    config:
+      fail-fast: true
 
-
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-
-      # Explicit routes
-      routes:
-        - id: auth-service
-          uri: lb://AUTHSERVICE
-          predicates:
-            - Path=/api/v1/auth/**
-
-        - id: workspace-service
-          uri: lb://WORKSPACESERVICE
-          predicates:
-            - Path=/api/v1/workspaces/**,/api/v1/tasks/**,/api/v1/assignments/**
-
-        - id: interview-service
-          uri: lb://INTERVIEW-SERVICE
-          predicates:
-            - Path=/api/v1/interview/**
-
-        - id: roadmap-service
-          uri: lb://ROADMAP-SERVICE
-          predicates:
-            - Path=/api/v1/task/**,/api/v1/roadmap/**
-
-        - id: portfolio-service
-          uri: lb://PORTFOLIOSERVICE
-          predicates:
-            - Path=/api/v1/portfolio/**
-
-server:
-  port: 8080
-  address: 0.0.0.0
-
-# Eureka (Docker service name, NOT localhost)
-eureka:
-  client:
-    service-url:
-      defaultZone: http://service-discovery:8761/eureka/
-
-# Idempotency Configuration
-idempotency:
-  defaults:
-    in-progress: 30s
-    completed: 24h
-
-  endpoints:
-    "POST:/api/v1/workspaces":
-      in-progress: 10s
-      completed: 1h
-
-    "POST:/api/v1/tasks":
-      in-progress: 10s
-      completed: 1h
-
-    "POST:/api/v1/assignments":
-      in-progress: 10s
-      completed: 1h
-
-# JWT / Auth
-jwt:
-  public-key: classpath:public.pem
-
-auth:
-  jwks-url: http://AUTHSERVICE/.well-known/jwks.json
-  jwks-refresh-ms: 60000
-
-# Logging (debug while stabilizing prod)
-logging:
-  level:
-    com.SwitchBoard.Gateway: DEBUG
-    org.springframework.security: DEBUG
-    io.jsonwebtoken: DEBUG
-
-# Actuator (exposed, but access controlled by security config)
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      show-details: never
+      retry:
+        max-attempts: 10
+        initial-interval: 2000
+        multiplier: 1.5
+        max-interval: 10000
