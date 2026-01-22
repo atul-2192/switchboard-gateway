@@ -10,7 +10,7 @@ spring:
 
   cloud:
     config:
-      fail-fast: true
+      fail-fast: false
 
       retry:
         max-attempts: 10
