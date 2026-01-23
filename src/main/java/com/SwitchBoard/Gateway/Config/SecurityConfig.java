@@ -54,7 +54,7 @@ public class SecurityConfig {
 
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .pathMatchers("/actuator/health", "/actuator/info","/actuator/prometheus").permitAll()
                         .pathMatchers("/api/v1/auth/**").permitAll()
                         .pathMatchers("/.well-known/jwks.json").permitAll()
                         .anyExchange().authenticated()
