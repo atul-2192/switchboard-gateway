@@ -57,6 +57,8 @@ public class SecurityConfig {
                         .pathMatchers("/actuator/health", "/actuator/info","/actuator/prometheus").permitAll()
                         .pathMatchers("/api/v1/auth/**").permitAll()
                         .pathMatchers("/.well-known/jwks.json").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/v1/interview/").permitAll()
+
                         .anyExchange().authenticated()
                 )
 
