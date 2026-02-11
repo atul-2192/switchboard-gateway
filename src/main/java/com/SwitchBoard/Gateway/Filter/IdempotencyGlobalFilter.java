@@ -4,7 +4,6 @@ import com.SwitchBoard.Gateway.Config.IdempotencyConfig;
 import com.SwitchBoard.Gateway.Model.IdempotencyRecord;
 import com.SwitchBoard.Gateway.Service.IdempotencyService;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -64,7 +63,7 @@ public class IdempotencyGlobalFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
         
-        log.info("Processing idempotent request: {} {} with key: {}", 
+        log.info("IdempotencyGlobalFilter : filter : Processing idempotent request: {} {} with key: {}", 
                 request.getMethod(), request.getPath(), idempotencyKey);
         
         // Resolve TTL configuration for this endpoint
@@ -72,10 +71,6 @@ public class IdempotencyGlobalFilter implements GlobalFilter, Ordered {
                 request.getMethod().name(),
                 request.getPath().value()
         );
-        
-        log.debug("Using TTL config for {} {}: IN_PROGRESS={}, COMPLETED={}", 
-                request.getMethod(), request.getPath(), 
-                ttlConfig.getInProgress(), ttlConfig.getCompleted());
         
         // Try to acquire the idempotency key atomically
         return idempotencyService.tryAcquire(idempotencyKey, ttlConfig.getInProgress())
@@ -110,8 +105,7 @@ public class IdempotencyGlobalFilter implements GlobalFilter, Ordered {
                 .build();
         
         return chain.filter(decoratedExchange)
-                .doOnSuccess(v -> log.info("Successfully processed first request for key: {}", idempotencyKey))
-                .doOnError(e -> log.error("Error processing first request for key: {}", idempotencyKey, e));
+                .doOnError(e -> log.error("IdempotencyGlobalFilter : handleFirstRequest : Error processing first request for key: {}", idempotencyKey, e));
     }
     
 
@@ -147,7 +141,7 @@ public class IdempotencyGlobalFilter implements GlobalFilter, Ordered {
 
     private Mono<Void> returnCachedResponse(ServerWebExchange exchange, 
                                              IdempotencyRecord record, String idempotencyKey) {
-        log.info("Returning cached response for key: {} with status: {}", 
+        log.info("IdempotencyGlobalFilter : returnCachedResponse : Returning cached response for key: {} with status: {}", 
                 idempotencyKey, record.getHttpStatus());
         
         ServerHttpResponse response = exchange.getResponse();
@@ -166,7 +160,7 @@ public class IdempotencyGlobalFilter implements GlobalFilter, Ordered {
     
 
     private Mono<Void> returnProcessingResponse(ServerWebExchange exchange, String idempotencyKey) {
-        log.info("Request still in progress for key: {}, returning 202", idempotencyKey);
+        log.info("IdempotencyGlobalFilter : returnProcessingResponse : Request still in progress for key: {}", idempotencyKey);
         
         ServerHttpResponse response = exchange.getResponse();
         response.setStatusCode(HttpStatus.ACCEPTED);

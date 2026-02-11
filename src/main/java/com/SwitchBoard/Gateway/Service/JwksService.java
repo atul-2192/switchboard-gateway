@@ -42,8 +42,7 @@ public class JwksService {
 
     @PostConstruct
     public void init() {
-        // Don't block startup - fetch keys asynchronously
-        log.info("JWKS Service initialized. Keys will be fetched asynchronously.");
+        log.info("JwksService : init : JWKS Service initialized");
     }
 
     /**
@@ -72,8 +71,8 @@ public class JwksService {
      * Fetches JWKS JSON from auth service and updates cache atomically.
      */
     private void fetchAndCacheKeys() {
+        log.info("JwksService : fetchAndCacheKeys : Starting JWKS fetch from {}", jwksUrl);
         try {
-            log.debug("Fetching JWKS from {}", jwksUrl);
             String body = webClient.get()
                     .uri(jwksUrl)
                     .retrieve()
@@ -111,13 +110,13 @@ public class JwksService {
             if (!tmp.isEmpty()) {
                 keyCache.clear();
                 keyCache.putAll(tmp);
-                log.info("JWKS cache updated ({} keys)", keyCache.size());
+                log.info("JwksService : fetchAndCacheKeys : JWKS cache updated successfully with {} keys", keyCache.size());
             } else {
-                log.warn("No RSA keys found in JWKS response");
+                log.warn("JwksService : fetchAndCacheKeys : No RSA keys found in JWKS response");
             }
 
         } catch (Exception ex) {
-            log.error("Failed to fetch or parse JWKS from {}: {}", jwksUrl, ex.toString());
+            log.error("JwksService : fetchAndCacheKeys : Failed to fetch JWKS from {}", jwksUrl, ex);
             // keep old cache on failure
         }
     }

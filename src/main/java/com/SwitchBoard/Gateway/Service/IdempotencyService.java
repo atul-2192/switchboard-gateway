@@ -30,6 +30,7 @@ public class IdempotencyService {
     }
 
     public Mono<Optional<IdempotencyRecord>> tryAcquire(String idempotencyKey, Duration inProgressTtl) {
+        log.info("IdempotencyService : tryAcquire : Starting with key: {}", idempotencyKey);
         String redisKey = KEY_PREFIX + idempotencyKey;
         IdempotencyRecord record = IdempotencyRecord.inProgress();
         
@@ -38,20 +39,21 @@ public class IdempotencyService {
                         .setIfAbsent(redisKey, json, inProgressTtl)
                         .map(acquired -> {
                             if (Boolean.TRUE.equals(acquired)) {
-                                log.info("Acquired idempotency key: {} with TTL: {}", idempotencyKey, inProgressTtl);
                                 return Optional.of(record);
                             } else {
-                                log.info("Idempotency key already exists: {}", idempotencyKey);
+                                log.warn("IdempotencyService : tryAcquire : Key already exists: {}", idempotencyKey);
                                 return Optional.<IdempotencyRecord>empty();
                             }
                         }))
+                .doOnSuccess(result -> log.info("IdempotencyService : tryAcquire : Completed for key: {}", idempotencyKey))
                 .onErrorResume(e -> {
-                    log.error("Failed to acquire idempotency key: {}", idempotencyKey, e);
+                    log.error("IdempotencyService : tryAcquire : Failed for key: {}", idempotencyKey, e);
                     return Mono.just(Optional.empty());
                 });
     }
 
     public Mono<Optional<IdempotencyRecord>> fetch(String idempotencyKey) {
+        log.info("IdempotencyService : fetch : Starting for key: {}", idempotencyKey);
         String redisKey = KEY_PREFIX + idempotencyKey;
         
         return redisTemplate.opsForValue()
@@ -59,25 +61,26 @@ public class IdempotencyService {
                 .flatMap(json -> deserialize(json)
                         .map(Optional::of))
                 .defaultIfEmpty(Optional.empty())
+                .doOnSuccess(result -> log.info("IdempotencyService : fetch : Completed for key: {}", idempotencyKey))
                 .onErrorResume(e -> {
-                    log.error("Failed to fetch idempotency record: {}", idempotencyKey, e);
+                    log.error("IdempotencyService : fetch : Failed for key: {}", idempotencyKey, e);
                     return Mono.just(Optional.empty());
                 });
     }
 
     public Mono<Void> complete(String idempotencyKey, Integer httpStatus, 
                                 String responseBody, java.time.Instant startedAt, Duration completedTtl) {
+        log.info("IdempotencyService : complete : Starting for key: {} with status: {}", idempotencyKey, httpStatus);
         String redisKey = KEY_PREFIX + idempotencyKey;
         IdempotencyRecord record = IdempotencyRecord.completed(httpStatus, responseBody, startedAt);
         
         return serialize(record)
                 .flatMap(json -> redisTemplate.opsForValue()
                         .set(redisKey, json, completedTtl)
-                        .doOnSuccess(success -> log.info("Completed idempotency key: {} with status: {}, TTL: {}", 
-                                idempotencyKey, httpStatus, completedTtl))
+                        .doOnSuccess(success -> log.info("IdempotencyService : complete : Completed successfully for key: {}", idempotencyKey))
                         .then())
                 .onErrorResume(e -> {
-                    log.error("Failed to complete idempotency record: {}", idempotencyKey, e);
+                    log.error("IdempotencyService : complete : Failed for key: {}", idempotencyKey, e);
                     // Don't propagate error - response already sent to client
                     return Mono.empty();
                 });

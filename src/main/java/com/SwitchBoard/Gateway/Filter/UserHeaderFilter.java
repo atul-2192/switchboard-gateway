@@ -28,9 +28,6 @@ public class UserHeaderFilter implements GlobalFilter, Ordered {
                             .header("X-User-Role", jwtAuth.getRole())
                             .build();
 
-                    log.debug("Added user headers - X-User-Id: {}, X-User-Email: {}, X-User-Role: {}", 
-                            jwtAuth.getUserId(), jwtAuth.getEmail(), jwtAuth.getRole());
-
                     return exchange.mutate().request(mutated).build();
                 })
                 .defaultIfEmpty(exchange)

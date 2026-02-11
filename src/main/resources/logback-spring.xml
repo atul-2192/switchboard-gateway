@@ -21,6 +21,32 @@
         </encoder>
     </appender>
 
+    <!-- Suppress verbose Spring Cloud Gateway logs -->
+    <logger name="org.springframework.cloud.gateway" level="WARN"/>
+    <logger name="org.springframework.cloud.netflix" level="WARN"/>
+    <logger name="org.springframework.cloud.config" level="WARN"/>
+    <logger name="org.springframework.cloud.loadbalancer" level="WARN"/>
+    
+    <!-- Suppress verbose actuator health check logs -->
+    <logger name="org.springframework.boot.actuate" level="WARN"/>
+    <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" level="WARN"/>
+    
+    <!-- Suppress verbose HTTP client logs -->
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="org.springframework.web.client.RestTemplate" level="WARN"/>
+    <logger name="org.springframework.web.reactive.function.client" level="WARN"/>
+    
+    <!-- Suppress Spring Security verbose logs -->
+    <logger name="org.springframework.security" level="WARN"/>
+    
+    <!-- Suppress Netty and Reactor verbose logs -->
+    <logger name="reactor.netty" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    
+    <!-- Suppress Redis/Lettuce verbose logs -->
+    <logger name="io.lettuce" level="WARN"/>
+    <logger name="org.springframework.data.redis" level="WARN"/>
+
     <springProfile name="local,dev">
         <logger name="com.SwitchBoard.Gateway" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE"/>
@@ -41,18 +67,5 @@
             <appender-ref ref="JSON"/>
         </root>
     </springProfile>
-
-<!--    <logger name="org.springframework.boot.context.properties.migrator" level="ERROR"/>-->
-<!--    <logger name="org.springframework.cloud.gateway.config.GatewayClassPathWarningAutoConfiguration" level="ERROR"/>-->
-<!--    <logger name="org.springframework.cloud.gateway.server.webflux.config.StarterDeprecatedAutoConfiguration" level="ERROR"/>-->
-<!--    <logger name="org.springframework.cloud.gateway.server.webflux.config.ServerWebfluxPropertiesMigrationListener" level="ERROR"/>-->
-<!--    <logger name="org.springframework.cloud.loadbalancer.config.LoadBalancerCacheAutoConfiguration" level="ERROR"/>-->
-<!--    <logger name="io.netty.resolver.dns.DnsServerAddressStreamProviders" level="ERROR"/>-->
-<!--    -->
-<!--    <logger name="org.springframework.cloud.config.client" level="ERROR"/>-->
-<!--    <logger name="org.springframework.data.repository.config" level="ERROR"/>-->
-<!--    <logger name="org.springframework.cloud.context.scope" level="ERROR"/>-->
-<!--    <logger name="reactor.netty" level="ERROR"/>-->
-<!--    <logger name="io.lettuce" level="ERROR"/>-->
 
 </configuration>
